@@ -162,15 +162,38 @@ class SandEDA(UtilsCalc):
             },
             "target_general": {
                 "target_name": self.target_name,
+                "number_of_one": int((self.df[self.target_name] == 1).sum()),
                 "number_of_unique_values": int(self.df[self.target_name].nunique()),
                 "number_of_missing": int(self.df[self.target_name].isnull().sum()),
                 "number_of_zero": int((self.df[self.target_name] == 0).sum()),
                 "target_type": str(self.df[self.target_name].dtypes),
+                "target_percentage_month_over_month": {
+                    time: float(
+                        round(
+                            (self.df[self.df[self.time_name] == time][self.target_name].sum() / self.df[self.df[self.time_name] == time].shape[0]) * 100, 2
+                        )
+                    )
+                    for time in self.df[self.time_name].unique()
+                },
             },
         }
 
         return res_general
     
+    def histogram_variable_espec(self, variable):
+        if len(variable.unique()) <= 50:
+           res_hist_espec = variable.value_counts().to_dict()
+        else:
+           res_hist_espec = variable.value_counts(bins=50).to_dict()
+        return res_hist_espec
+
+    def decil_variable_espec(self, variable_name):
+        if len(self.df[variable_name].unique()) <= 10:
+            res_decil_espec = self.df.groupby([variable_name])['default'].mean()
+        else:
+            res_decil_espec = self.df.groupby(pd.qcut(self.df[variable_name], q=10, labels=False, duplicates='drop'))['default'].mean()
+        return res_decil_espec
+
     def variables_espec(self):
         
         res_espec = {}
@@ -183,22 +206,30 @@ class SandEDA(UtilsCalc):
                     "number_of_unique_values": int(self.df[var].nunique()),
                     "number_per_values": self.df[var].value_counts().to_dict(),
                     "unique_values": self.df[var].unique().tolist(),
+                    "histogram": self.df[var].value_counts().to_dict(),
                 }
             elif self.df[var].dtype in ["int64", "float64"]:
-                res_espec[var] = {
-                "variable_type": str(self.df[var].dtypes),
-                "number_of_missing": int(self.df[var].isnull().sum()),
-                "number_of_zeros": int((self.df[var] == 0).sum()),
-                "sum" : float(self.df[var].sum()),
-                "mean": float(round(self.df[var].mean(), 2)),
-                "median": float(self.df[var].median()),
-                "std": float(round(self.df[var].std(), 2)),
-                "min": float(self.df[var].min()),
-                "25%": float(self.df[var].quantile(0.25)),
-                "50%": float(self.df[var].quantile(0.5)),
-                "75%": float(self.df[var].quantile(0.75)),
-                "max": float(self.df[var].max()),
+                res_espec[var] = { "descriptive_statistics": {
+                    "variable_type": str(self.df[var].dtypes),
+                    "number_of_unique_values": int(self.df[var].nunique()),
+                    "number_of_missing": int(self.df[var].isnull().sum()),
+                    "number_of_zeros": int((self.df[var] == 0).sum()),
+                    "sum": float(self.df[var].sum()),
+                    "mean": float(round(self.df[var].mean(), 2)),
+                    "median": float(self.df[var].median()),
+                    "std": float(round(self.df[var].std(), 2))},
+                    "quantile_statistics": {
+                    "min": float(self.df[var].min()),
+                    "5%": float(self.df[var].quantile(0.5)),
+                    "25%": float(self.df[var].quantile(0.25)),
+                    "50%": float(self.df[var].quantile(0.5)),
+                    "75%": float(self.df[var].quantile(0.75)),
+                    "95%": float(self.df[var].quantile(0.95)),
+                    "max": float(self.df[var].max())},
+                    "histogram": self.histogram_variable_espec(self.df[var]),
+                    "decil": self.decil_variable_espec(var),
                 }
+
         return res_espec
     
     def variables_espec_time(self):
@@ -206,6 +237,7 @@ class SandEDA(UtilsCalc):
         res_espect_time = {}
         for time in self.df[self.time_name].unique():
             df_time = self.df[self.df[self.time_name] == time]
+
             
             res_espec = {}
 

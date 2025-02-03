@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Science Dashboard</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+    <style>
+        :root {
+            --primary-color: #3a5064;
+            --secondary-color: #788288;
+            --accent-color: #36393b;
+            --text-color: #363333;
+            --bg-color: #f8f9f9;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        .container {
+            display: grid;
+            grid-template-areas:
+                "header header"
+                "nav main"
+                "footer footer";
+            grid-template-columns: 200px 1fr;
+            grid-template-rows: auto 1fr auto;
+            min-height: 100vh;
+        }
+
+        header {
+            grid-area: header;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo img {
+            height: 40px;
+            margin-right: 1rem;
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+        }
+
+        .search-bar input {
+            padding: 0.5rem;
+            border: none;
+            border-radius: 4px;
+        }
+
+        .left-menu {
+            grid-area: nav;
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 1rem;
+        }
+
+        .left-menu ul {
+            list-style: none;
+            padding: 1rem 0;
+        }
+
+        .left-menu a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            display: block;
+        }
+
+        .left-menu a:hover {
+            background-color: var(--accent-color);
+        }
+
+        .content {
+            grid-area: main;
+            padding: 2rem;
+        }
+
+        .chart {
+            background: white;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        footer {
+            grid-area: footer;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .footer-links a {
+            color: white;
+            margin: 0 1rem;
+            text-decoration: none;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-areas:
+                    "header"
+                    "nav"
+                    "main"
+                    "footer";
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .menu-toggle {
+            display: none;
+            position: absolute;
+            left: 20px;
+            top: 20px;
+            z-index: 100;
+            cursor: pointer;
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .menu-toggle {
+            display: block;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .menu-hidden .left-menu {
+            transform: translateX(-250px);
+        }
+
+        .menu-hidden .content {
+            margin-left: 0;
+        }
+
+        .left-menu {
+            transition: transform 0.3s ease;
+        }
+
+        .content {
+            transition: margin-left 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: block;
+            }
+
+            .left-menu {
+                position: fixed;
+                height: 100%;
+                z-index: 99;
+            }
+        }
+    </style>
+
+    <script>
+        $('.menu-toggle').on('click', () => {
+            $('.container').toggleClass('menu-hidden');
+        });
+    </script>
+    
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <img src="logo.png" alt="Logo">
+                <h1>Data Science Dashboard</h1>
+            </div>
+            <div class="search-bar">
+                <input type="text" placeholder="Search...">
+            </div>
+        </header>
+        
+        <nav class="left-menu">
+            <h2>Navigation</h2>
+            <button class="menu-toggle">☰</button>
+            <ul>
+                <li><a href="#analysis">Data Analysis</a></li>
+                <li><a href="#visualizations">Visualizations</a></li>
+                <li><a href="#reports">Reports</a></li>
+            </ul>
+        </nav>
+
+        <main class="content">
+            <section id="visualization-area">
+                <h2>Data Visualizations</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Year</th>
+                            <th>Sales</th>
+                            <th>Profit</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>2021</td>
+                            <td>$100,000</td>
+                            <td>$10,000</td>
+                        </tr>
+                        <tr>
+                            <td>2022</td>
+                            <td>$150,000</td>
+                            <td>$15,000</td>
+                        </tr>
+                        <tr>
+                            <td>2023</td>
+                            <td>$200,000</td>
+                            <td>$20,000</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div id="vis1" class="chart"></div>
+                <script type="text/javascript">
+                    const spec = {
+                        "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+                        "description": "A simple bar chart with embedded data.",
+                        "data": {
+                            "values": [
+                                {"category": "A", "value": 28},
+                                {"category": "B", "value": 55},
+                                {"category": "C", "value": 43},
+                                {"category": "D", "value": 91},
+                                {"category": "E", "value": 81},
+                                {"category": "F", "value": 53},
+                                {"category": "G", "value": 19},
+                                {"category": "H", "value": 87}
+                            ]
+                        },
+                        "mark": "bar",
+                        "encoding": {
+                            "x": {"field": "category", "type": "ordinal"},
+                            "y": {"field": "value", "type": "quantitative"}
+                        }
+                    };
+
+                    vegaEmbed('#vis1', spec);
+                </script>
+                <div id="vis2" class="chart"></div>
+            </section>
+            
+            <section id="table-area">
+                <h2>Data Tables</h2>
+                <div class="table-container">
+                    <!-- Tables will be inserted here -->
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2024 Data Science Dashboard</p>
+        </footer>
+    </div>
+</body>
+</html>
