@@ -127,7 +127,6 @@
       margin-top: 1rem;
       margin-bottom: 1rem;
     }
-
   </style>
 </head>
 
@@ -348,109 +347,216 @@
       </div>
 
       <h2>Especific Variables</h2>
-      <div class="container overview">
-        
+
+      <div class="container">
+        <h3>PAY_5</h3>
         <div class=".container-vertical">
-        <table>
-          <thead>
-            <tr style="text-align: right;">
-              <th>description</th>
-              <th>value</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>variable_type</td>
-              <td>float64</td>
-            </tr>
-            <tr>
-              <td>number_of_unique_values</td>
-              <td>20604</td>
-            </tr>
-            <tr>
-              <td>number_of_missing</td>
-              <td>0</td>
-            </tr>
-            <tr>
-              <td>number_of_zeros</td>
-              <td>4020</td>
-            </tr>
-            <tr>
-              <td>sum</td>
-              <td>1166152812.0</td>
-            </tr>
-            <tr>
-              <td>mean</td>
-              <td>38871.76</td>
-            </tr>
-            <tr>
-              <td>median</td>
-              <td>17071.0</td>
-            </tr>
-            <tr>
-              <td>std</td>
-              <td>59554.11</td>
-            </tr>
-          </tbody>
-        </table>
+          <table>
+            <thead>
+              <tr style="text-align: right;">
+                <th>description</th>
+                <th>value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>variable_type</td>
+                <td>float64</td>
+              </tr>
+              <tr>
+                <td>number_of_unique_values</td>
+                <td>20604</td>
+              </tr>
+              <tr>
+                <td>number_of_missing</td>
+                <td>0</td>
+              </tr>
+              <tr>
+                <td>number_of_zeros</td>
+                <td>4020</td>
+              </tr>
+              <tr>
+                <td>sum</td>
+                <td>1166152812.0</td>
+              </tr>
+              <tr>
+                <td>mean</td>
+                <td>38871.76</td>
+              </tr>
+              <tr>
+                <td>median</td>
+                <td>17071.0</td>
+              </tr>
+              <tr>
+                <td>std</td>
+                <td>59554.11</td>
+              </tr>
+            </tbody>
+          </table>
 
-        <table>
-          <thead>
-            <tr style="text-align: right;">
-              <th>description</th>
-              <th>value</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>min</td>
-              <td>-339603.00</td>
-            </tr>
-            <tr>
-              <td>5%</td>
-              <td>17071.00</td>
-            </tr>
-            <tr>
-              <td>25%</td>
-              <td>1256.00</td>
-            </tr>
-            <tr>
-              <td>50%</td>
-              <td>17071.00</td>
-            </tr>
-            <tr>
-              <td>75%</td>
-              <td>49198.25</td>
-            </tr>
-            <tr>
-              <td>95%</td>
-              <td>161912.00</td>
-            </tr>
-            <tr>
-              <td>max</td>
-              <td>961664.00</td>
-            </tr>
-          </tbody>
-        </table>
+          <table>
+            <thead>
+              <tr style="text-align: right;">
+                <th>description</th>
+                <th>value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>min</td>
+                <td>-339603.00</td>
+              </tr>
+              <tr>
+                <td>5%</td>
+                <td>17071.00</td>
+              </tr>
+              <tr>
+                <td>25%</td>
+                <td>1256.00</td>
+              </tr>
+              <tr>
+                <td>50%</td>
+                <td>17071.00</td>
+              </tr>
+              <tr>
+                <td>75%</td>
+                <td>49198.25</td>
+              </tr>
+              <tr>
+                <td>95%</td>
+                <td>161912.00</td>
+              </tr>
+              <tr>
+                <td>max</td>
+                <td>961664.00</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class=".container-vertical">
+          <div class="vega-visualization" id="vega-visualization-240ea36e674548deab9e52f05c1bcb46"></div>
+          <script type="text/javascript">
+            const spec11 = {"config": {"view": {"continuousWidth": 300, "continuousHeight": 300}, "axis": {"labelAngle": 45}, "title": {"fontSize": 14}}, "data": {"name": "data-9808741cd17fa853e4cc4ce3715827af"}, "mark": {"type": "bar"}, "encoding": {"x": {"axis": {"labelFontSize": 9, "labelOverlap": true, "labels": true}, "field": "Interval", "sort": null, "title": "", "type": "nominal"}, "y": {"axis": {"labels": false}, "field": "Count", "title": "Qty", "type": "quantitative"}}, "height": 200, "params": [{"name": "param_16", "select": {"type": "interval", "encodings": ["x", "y"]}, "bind": "scales"}], "title": "Histogram", "width": 350, "$schema": "https://vega.github.io/schema/vega-lite/v5.20.1.json", "datasets": {"data-9808741cd17fa853e4cc4ce3715827af": [{"Interval": "-1273.6", "Count": 17651}, {"Interval": "24751.8", "Count": 5011}, {"Interval": "50777.1", "Count": 2148}, {"Interval": "76802.4", "Count": 1621}, {"Interval": "102827.8", "Count": 996}, {"Interval": "128853.1", "Count": 773}, {"Interval": "154878.5", "Count": 507}, {"Interval": "180903.8", "Count": 396}, {"Interval": "206929.1", "Count": 203}, {"Interval": "-27298.9", "Count": 147}, {"Interval": "232954.5", "Count": 145}, {"Interval": "258979.8", "Count": 106}, {"Interval": "285005.2", "Count": 90}, {"Interval": "311030.5", "Count": 50}, {"Interval": "337055.8", "Count": 44}, {"Interval": "363081.2", "Count": 24}, {"Interval": "415131.9", "Count": 21}, {"Interval": "389106.5", "Count": 21}, {"Interval": "467182.5", "Count": 11}, {"Interval": "441157.2", "Count": 8}, {"Interval": "493207.9", "Count": 8}, {"Interval": "-53324.3", "Count": 8}, {"Interval": "-79349.6", "Count": 2}, {"Interval": "519233.2", "Count": 2}, {"Interval": "545258.6", "Count": 1}, {"Interval": "675385.3", "Count": 1}, {"Interval": "-340904.3", "Count": 1}, {"Interval": "-157425.6", "Count": 1}, {"Interval": "935638.7", "Count": 1}, {"Interval": "-209476.3", "Count": 1}, {"Interval": "-105374.9", "Count": 1}, {"Interval": "-313577.7", "Count": 0}, {"Interval": "-131400.3", "Count": 0}, {"Interval": "-287552.3", "Count": 0}, {"Interval": "-235501.6", "Count": 0}, {"Interval": "-261527.0", "Count": 0}, {"Interval": "-183451.0", "Count": 0}, {"Interval": "597309.2", "Count": 0}, {"Interval": "623334.6", "Count": 0}, {"Interval": "649359.9", "Count": 0}, {"Interval": "701410.6", "Count": 0}, {"Interval": "571283.9", "Count": 0}, {"Interval": "727435.9", "Count": 0}, {"Interval": "753461.3", "Count": 0}, {"Interval": "805512.0", "Count": 0}, {"Interval": "779486.6", "Count": 0}, {"Interval": "831537.3", "Count": 0}, {"Interval": "857562.6", "Count": 0}, {"Interval": "883588.0", "Count": 0}, {"Interval": "909613.3", "Count": 0}]}};
+            const embedOpt11 = {"actions": false};
+            vegaEmbed('#vega-visualization-240ea36e674548deab9e52f05c1bcb46', spec11, embedOpt11).catch(console.error);
+          </script>
+          <br>
+
+          <div class="vega-visualization" id="vega-visualization-6162575709ee4283ba3c87ddc632a50d"></div>
+          <script type="text/javascript">
+            const spec22 = {"config": {"view": {"continuousWidth": 300, "continuousHeight": 300}, "axis": {"labelAngle": 45}, "title": {"fontSize": 12}}, "data": {"name": "data-d3bb48cf9328894d651273521d41ecf4"}, "mark": {"type": "bar"}, "encoding": {"x": {"axis": {"labelFontSize": 9, "labelOverlap": true, "labels": true}, "field": "Decil", "sort": null, "title": "Decil", "type": "quantitative"}, "y": {"axis": {"labels": false}, "field": "Target", "title": "% Target", "type": "quantitative"}}, "height": 200, "params": [{"name": "param_15", "select": {"type": "interval", "encodings": ["x", "y"]}, "bind": "scales"}], "title": "Target mean per Decil", "width": 350, "$schema": "https://vega.github.io/schema/vega-lite/v5.20.1.json", "datasets": {"data-d3bb48cf9328894d651273521d41ecf4": [{"Decil": 0, "Target": 0.2306711979609176}, {"Decil": 1, "Target": 0.23059185242121444}, {"Decil": 2, "Target": 0.20595118689401537}, {"Decil": 3, "Target": 0.17166666666666666}, {"Decil": 4, "Target": 0.228}, {"Decil": 5, "Target": 0.26033333333333336}, {"Decil": 6, "Target": 0.24733333333333332}, {"Decil": 7, "Target": 0.21866666666666668}, {"Decil": 8, "Target": 0.218}, {"Decil": 9, "Target": 0.20066666666666666}]}};
+            const embedOpt22 = {"actions": false};
+            vegaEmbed('#vega-visualization-6162575709ee4283ba3c87ddc632a50d', spec22, embedOpt22).catch(console.error);
+          </script>
+        </div>
       </div>
 
-
-      <div class=".container-vertical">
-        <div class="vega-visualization" id="vega-visualization-a80db06ea9c84678ba99222a2905958b"></div>
-        <script type="text/javascript">
-          const spec_1 = { "config": { "view": { "continuousWidth": 300, "continuousHeight": 300 }, "axis": { "labelAngle": 45 }, "title": { "fontSize": 10 } }, "data": { "name": "data-9808741cd17fa853e4cc4ce3715827af" }, "mark": { "type": "bar" }, "encoding": { "x": { "axis": { "labelFontSize": 9, "labelOverlap": true, "labels": true }, "field": "Interval", "sort": null, "title": "", "type": "nominal" }, "y": { "axis": { "labels": false }, "field": "Count", "title": "", "type": "quantitative" } }, "height": 150, "params": [{ "name": "param_4", "select": { "type": "interval", "encodings": ["x", "y"] }, "bind": "scales" }], "width": 200, "$schema": "https://vega.github.io/schema/vega-lite/v5.20.1.json", "datasets": { "data-9808741cd17fa853e4cc4ce3715827af": [{ "Interval": "-1273.6", "Count": 17651 }, { "Interval": "24751.8", "Count": 5011 }, { "Interval": "50777.1", "Count": 2148 }, { "Interval": "76802.4", "Count": 1621 }, { "Interval": "102827.8", "Count": 996 }, { "Interval": "128853.1", "Count": 773 }, { "Interval": "154878.5", "Count": 507 }, { "Interval": "180903.8", "Count": 396 }, { "Interval": "206929.1", "Count": 203 }, { "Interval": "-27298.9", "Count": 147 }, { "Interval": "232954.5", "Count": 145 }, { "Interval": "258979.8", "Count": 106 }, { "Interval": "285005.2", "Count": 90 }, { "Interval": "311030.5", "Count": 50 }, { "Interval": "337055.8", "Count": 44 }, { "Interval": "363081.2", "Count": 24 }, { "Interval": "415131.9", "Count": 21 }, { "Interval": "389106.5", "Count": 21 }, { "Interval": "467182.5", "Count": 11 }, { "Interval": "441157.2", "Count": 8 }, { "Interval": "493207.9", "Count": 8 }, { "Interval": "-53324.3", "Count": 8 }, { "Interval": "-79349.6", "Count": 2 }, { "Interval": "519233.2", "Count": 2 }, { "Interval": "545258.6", "Count": 1 }, { "Interval": "675385.3", "Count": 1 }, { "Interval": "-340904.3", "Count": 1 }, { "Interval": "-157425.6", "Count": 1 }, { "Interval": "935638.7", "Count": 1 }, { "Interval": "-209476.3", "Count": 1 }, { "Interval": "-105374.9", "Count": 1 }, { "Interval": "-313577.7", "Count": 0 }, { "Interval": "-131400.3", "Count": 0 }, { "Interval": "-287552.3", "Count": 0 }, { "Interval": "-235501.6", "Count": 0 }, { "Interval": "-261527.0", "Count": 0 }, { "Interval": "-183451.0", "Count": 0 }, { "Interval": "597309.2", "Count": 0 }, { "Interval": "623334.6", "Count": 0 }, { "Interval": "649359.9", "Count": 0 }, { "Interval": "701410.6", "Count": 0 }, { "Interval": "571283.9", "Count": 0 }, { "Interval": "727435.9", "Count": 0 }, { "Interval": "753461.3", "Count": 0 }, { "Interval": "805512.0", "Count": 0 }, { "Interval": "779486.6", "Count": 0 }, { "Interval": "831537.3", "Count": 0 }, { "Interval": "857562.6", "Count": 0 }, { "Interval": "883588.0", "Count": 0 }, { "Interval": "909613.3", "Count": 0 }] } };
-          const embedOpt_1 = { "actions": false };
-          vegaEmbed('#vega-visualization-a80db06ea9c84678ba99222a2905958b', spec_1, embedOpt_1).catch(console.error);
-        </script>
-        <br>
-
-        <div class="vega-visualization" id="vega-visualization-be8a96e5801e4258ae793cc9b270dfc3"></div>
-        <script type="text/javascript">
-          const spec_2 = { "config": { "view": { "continuousWidth": 300, "continuousHeight": 300 }, "axis": { "labelAngle": 45 }, "title": { "fontSize": 10 } }, "data": { "name": "data-d3bb48cf9328894d651273521d41ecf4" }, "mark": { "type": "bar" }, "encoding": { "x": { "axis": { "labelFontSize": 9, "labelOverlap": true, "labels": true }, "field": "Decil", "sort": null, "title": "", "type": "quantitative" }, "y": { "axis": { "labels": false }, "field": "Target", "title": "", "type": "quantitative" } }, "height": 150, "params": [{ "name": "param_5", "select": { "type": "interval", "encodings": ["x", "y"] }, "bind": "scales" }], "width": 200, "$schema": "https://vega.github.io/schema/vega-lite/v5.20.1.json", "datasets": { "data-d3bb48cf9328894d651273521d41ecf4": [{ "Decil": 0, "Target": 0.2306711979609176 }, { "Decil": 1, "Target": 0.23059185242121444 }, { "Decil": 2, "Target": 0.20595118689401537 }, { "Decil": 3, "Target": 0.17166666666666666 }, { "Decil": 4, "Target": 0.228 }, { "Decil": 5, "Target": 0.26033333333333336 }, { "Decil": 6, "Target": 0.24733333333333332 }, { "Decil": 7, "Target": 0.21866666666666668 }, { "Decil": 8, "Target": 0.218 }, { "Decil": 9, "Target": 0.20066666666666666 }] } };
-          const embedOpt_2 = { "actions": false };
-          vegaEmbed('#vega-visualization-be8a96e5801e4258ae793cc9b270dfc3', spec_2, embedOpt_2).catch(console.error);
-        </script>
+        <div class="container">
+          <h3>PAY_5</h3>
+          <div class=".container-vertical">
+            <table>
+              <thead>
+                <tr style="text-align: right;">
+                  <th>description</th>
+                  <th>value</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>variable_type</td>
+                  <td>float64</td>
+                </tr>
+                <tr>
+                  <td>number_of_unique_values</td>
+                  <td>20604</td>
+                </tr>
+                <tr>
+                  <td>number_of_missing</td>
+                  <td>0</td>
+                </tr>
+                <tr>
+                  <td>number_of_zeros</td>
+                  <td>4020</td>
+                </tr>
+                <tr>
+                  <td>sum</td>
+                  <td>1166152812.0</td>
+                </tr>
+                <tr>
+                  <td>mean</td>
+                  <td>38871.76</td>
+                </tr>
+                <tr>
+                  <td>median</td>
+                  <td>17071.0</td>
+                </tr>
+                <tr>
+                  <td>std</td>
+                  <td>59554.11</td>
+                </tr>
+              </tbody>
+            </table>
+  
+            <table>
+              <thead>
+                <tr style="text-align: right;">
+                  <th>description</th>
+                  <th>value</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>min</td>
+                  <td>-339603.00</td>
+                </tr>
+                <tr>
+                  <td>5%</td>
+                  <td>17071.00</td>
+                </tr>
+                <tr>
+                  <td>25%</td>
+                  <td>1256.00</td>
+                </tr>
+                <tr>
+                  <td>50%</td>
+                  <td>17071.00</td>
+                </tr>
+                <tr>
+                  <td>75%</td>
+                  <td>49198.25</td>
+                </tr>
+                <tr>
+                  <td>95%</td>
+                  <td>161912.00</td>
+                </tr>
+                <tr>
+                  <td>max</td>
+                  <td>961664.00</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+  
+          <div class=".container-vertical">
+            <div class="vega-visualization" id="vega-visualization-240ea36e674548deab9e52f05c1bcb45"></div>
+            <script type="text/javascript">
+              const spec112 = {"config": {"view": {"continuousWidth": 300, "continuousHeight": 300}, "axis": {"labelAngle": 45}, "title": {"fontSize": 14}}, "data": {"name": "data-9808741cd17fa853e4cc4ce3715827af"}, "mark": {"type": "bar"}, "encoding": {"x": {"axis": {"labelFontSize": 9, "labelOverlap": true, "labels": true}, "field": "Interval", "sort": null, "title": "", "type": "nominal"}, "y": {"axis": {"labels": false}, "field": "Count", "title": "Qty", "type": "quantitative"}}, "height": 200, "params": [{"name": "param_16", "select": {"type": "interval", "encodings": ["x", "y"]}, "bind": "scales"}], "title": "Histogram", "width": 350, "$schema": "https://vega.github.io/schema/vega-lite/v5.20.1.json", "datasets": {"data-9808741cd17fa853e4cc4ce3715827af": [{"Interval": "-1273.6", "Count": 17651}, {"Interval": "24751.8", "Count": 5011}, {"Interval": "50777.1", "Count": 2148}, {"Interval": "76802.4", "Count": 1621}, {"Interval": "102827.8", "Count": 996}, {"Interval": "128853.1", "Count": 773}, {"Interval": "154878.5", "Count": 507}, {"Interval": "180903.8", "Count": 396}, {"Interval": "206929.1", "Count": 203}, {"Interval": "-27298.9", "Count": 147}, {"Interval": "232954.5", "Count": 145}, {"Interval": "258979.8", "Count": 106}, {"Interval": "285005.2", "Count": 90}, {"Interval": "311030.5", "Count": 50}, {"Interval": "337055.8", "Count": 44}, {"Interval": "363081.2", "Count": 24}, {"Interval": "415131.9", "Count": 21}, {"Interval": "389106.5", "Count": 21}, {"Interval": "467182.5", "Count": 11}, {"Interval": "441157.2", "Count": 8}, {"Interval": "493207.9", "Count": 8}, {"Interval": "-53324.3", "Count": 8}, {"Interval": "-79349.6", "Count": 2}, {"Interval": "519233.2", "Count": 2}, {"Interval": "545258.6", "Count": 1}, {"Interval": "675385.3", "Count": 1}, {"Interval": "-340904.3", "Count": 1}, {"Interval": "-157425.6", "Count": 1}, {"Interval": "935638.7", "Count": 1}, {"Interval": "-209476.3", "Count": 1}, {"Interval": "-105374.9", "Count": 1}, {"Interval": "-313577.7", "Count": 0}, {"Interval": "-131400.3", "Count": 0}, {"Interval": "-287552.3", "Count": 0}, {"Interval": "-235501.6", "Count": 0}, {"Interval": "-261527.0", "Count": 0}, {"Interval": "-183451.0", "Count": 0}, {"Interval": "597309.2", "Count": 0}, {"Interval": "623334.6", "Count": 0}, {"Interval": "649359.9", "Count": 0}, {"Interval": "701410.6", "Count": 0}, {"Interval": "571283.9", "Count": 0}, {"Interval": "727435.9", "Count": 0}, {"Interval": "753461.3", "Count": 0}, {"Interval": "805512.0", "Count": 0}, {"Interval": "779486.6", "Count": 0}, {"Interval": "831537.3", "Count": 0}, {"Interval": "857562.6", "Count": 0}, {"Interval": "883588.0", "Count": 0}, {"Interval": "909613.3", "Count": 0}]}};
+              const embedOpt112 = {"actions": false};
+              vegaEmbed('#vega-visualization-240ea36e674548deab9e52f05c1bcb45', spec11, embedOpt11).catch(console.error);
+            </script>
+            <br>
+  
+            <div class="vega-visualization" id="vega-visualization-6162575709ee4283ba3c87ddc632a50f"></div>
+            <script type="text/javascript">
+              const spec223 = {"config": {"view": {"continuousWidth": 300, "continuousHeight": 300}, "axis": {"labelAngle": 45}, "title": {"fontSize": 12}}, "data": {"name": "data-d3bb48cf9328894d651273521d41ecf4"}, "mark": {"type": "bar"}, "encoding": {"x": {"axis": {"labelFontSize": 9, "labelOverlap": true, "labels": true}, "field": "Decil", "sort": null, "title": "Decil", "type": "quantitative"}, "y": {"axis": {"labels": false}, "field": "Target", "title": "% Target", "type": "quantitative"}}, "height": 200, "params": [{"name": "param_15", "select": {"type": "interval", "encodings": ["x", "y"]}, "bind": "scales"}], "title": "Target mean per Decil", "width": 350, "$schema": "https://vega.github.io/schema/vega-lite/v5.20.1.json", "datasets": {"data-d3bb48cf9328894d651273521d41ecf4": [{"Decil": 0, "Target": 0.2306711979609176}, {"Decil": 1, "Target": 0.23059185242121444}, {"Decil": 2, "Target": 0.20595118689401537}, {"Decil": 3, "Target": 0.17166666666666666}, {"Decil": 4, "Target": 0.228}, {"Decil": 5, "Target": 0.26033333333333336}, {"Decil": 6, "Target": 0.24733333333333332}, {"Decil": 7, "Target": 0.21866666666666668}, {"Decil": 8, "Target": 0.218}, {"Decil": 9, "Target": 0.20066666666666666}]}};
+              const embedOpt223 = {"actions": false};
+              vegaEmbed('#vega-visualization-6162575709ee4283ba3c87ddc632a50f', spec223, embedOpt223).catch(console.error);
+            </script>
+          </div>
+        </div>
       </div>
+
 
     </section>
   </main>
