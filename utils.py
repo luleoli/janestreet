@@ -76,9 +76,9 @@ class UtilsCalc():
 
         return mi_df
 
-    def calculate_ips(df, time_column, category_column, base_period, comparison_period):
+    def calculate_psi(df, time_column, category_column, base_period, comparison_period):
         """
-        Calculate the Index of Population Stability (IPS) for a categorical variable between two time periods.
+        Calculate the Index of Population Stability (psi) for a categorical variable between two time periods.
 
         Parameters:
         df (pd.DataFrame): The dataframe containing the data.
@@ -88,7 +88,7 @@ class UtilsCalc():
         comparison_period (str): The time period to compare against the base period.
 
         Returns:
-        float: The calculated IPS value.
+        float: The calculated psi value.
         """
         # Calculate the distribution of the categorical variable for the base period
         base_dist = df[df[time_column] == base_period][category_column].value_counts(normalize=True)
@@ -99,10 +99,10 @@ class UtilsCalc():
         # Align the distributions to ensure they have the same categories
         base_dist, comparison_dist = base_dist.align(comparison_dist, fill_value=0)
         
-        # Calculate the IPS
-        ips = sum(abs(base_dist - comparison_dist)) / 2
+        # Calculate the psi
+        psi = sum(abs(base_dist - comparison_dist)) / 2
         
-        return ips
+        return psi
     
 
     def calculate_ks(df, time_column, value_column, base_period, comparison_period):
@@ -129,14 +129,62 @@ class UtilsCalc():
 
         return ks_statistic
 
+    def calculate_missing_zero(df):
+        # Extract the number of missing values per variable
+        missing_per_variable = df.isnull().sum().to_dict()
+
+        # Calculate the percentage of missing values for each variable
+        total_rows = df.shape[0]
+        missing_percentage = {var: (count / total_rows) * 100 for var, count in missing_per_variable.items()}
+
+        # Count the number of variables with specific percentages of missing values
+        missing_100 = sum(1 for perc in missing_percentage.values() if perc == 100)
+        missing_75 = sum(1 for perc in missing_percentage.values() if perc >= 75)
+        missing_50 = sum(1 for perc in missing_percentage.values() if perc >= 50)
+        missing_25 = sum(1 for perc in missing_percentage.values() if perc >= 25)
+        missing_0 = sum(1 for perc in missing_percentage.values() if perc == 0)
+
+        # Extract the number of zero values per variable
+        zero_per_variable = (df == 0).sum().to_dict()
+
+        # Calculate the percentage of zero values for each variable
+        zero_percentage = {var: (count / total_rows) * 100 for var, count in zero_per_variable.items()}
+
+        # Count the number of variables with specific percentages of zero values
+        zero_100 = sum(1 for perc in zero_percentage.values() if perc == 100)
+        zero_75 = sum(1 for perc in zero_percentage.values() if perc >= 75)
+        zero_50 = sum(1 for perc in zero_percentage.values() if perc >= 50)
+        zero_25 = sum(1 for perc in zero_percentage.values() if perc >= 25)
+        zero_0 = sum(1 for perc in zero_percentage.values() if perc == 0)
+
+        # Extract the number of variables that are float or int and the number that are not
+        num_float_int = sum(value for dtype, value in df.dtypes.value_counts().to_dict().items() if dtype in ['float32', 'int32', 'float64', 'int64'])
+        num_not_float_int = df.shape[1] - num_float_int
+
+        # Create a dataframe to store the results
+        return {
+                "description": [
+                    "missing 100% -> 0%",
+                    "zero 100% -> 0%",
+                    "number_of_continuous",
+                    "number_of_not_continuous",
+                ],
+                "value": [
+                    [missing_100, missing_75, missing_50, missing_25, missing_0],
+                    [zero_100, zero_75, zero_50, zero_25, zero_0],
+                    num_float_int,
+                    num_not_float_int,
+                ],
+                }
 
 class SandEDA(UtilsCalc):
      
-    def __init__(self, df, df_name, target_name, time_name):
+    def __init__(self, df, df_name, target_name, time_name, id_name):
         self.df = df
         self.df_name = df_name
         self.target_name = target_name
         self.time_name = time_name
+        self.id_name = id_name
         self.target_type = df[target_name].dtypes
 
     def calc_general(self):
@@ -167,7 +215,7 @@ class SandEDA(UtilsCalc):
                 "number_of_missing": int(self.df[self.target_name].isnull().sum()),
                 "number_of_zero": int((self.df[self.target_name] == 0).sum()),
                 "target_type": str(self.df[self.target_name].dtypes),
-                "target_percentage_month_over_month": {
+                "target_metric_time": {
                     time: float(
                         round(
                             (self.df[self.df[self.time_name] == time][self.target_name].sum() / self.df[self.df[self.time_name] == time].shape[0]) * 100, 2
@@ -176,6 +224,7 @@ class SandEDA(UtilsCalc):
                     for time in self.df[self.time_name].unique()
                 },
             },
+            "missing_zero": UtilsCalc.calculate_missing_zero(self.df),
         }
 
         return res_general
@@ -194,11 +243,14 @@ class SandEDA(UtilsCalc):
             res_decil_espec = self.df.groupby(pd.qcut(self.df[variable_name], q=10, labels=False, duplicates='drop'))['default'].mean()
         return res_decil_espec
 
+
     def variables_espec(self):
         
         res_espec = {}
 
-        for var in self.df.columns:
+        df_filtered = self.df.drop(columns=[self.time_name, self.target_name])
+
+        for var in df_filtered:
             if self.df[var].dtypes == "object":
                 res_espec[var] = {
                     "variable_type": self.df[var].dtypes,
@@ -234,94 +286,139 @@ class SandEDA(UtilsCalc):
     
     def variables_espec_time(self):
 
+        res_espect_var = {}
         res_espect_time = {}
-        for time in self.df[self.time_name].unique():
-            df_time = self.df[self.df[self.time_name] == time]
+        quintil_cut_points = {}
+        
+        df_filtered = self.df.drop(columns=[self.time_name, self.target_name, self.id_name])
 
-            
-            res_espec = {}
+        for var in df_filtered:
 
-            for var in df_time.columns:
+            for time in self.df[self.time_name].unique():
+
+                df_time = self.df[self.df[self.time_name] == time]
+                
+                res_espec = {}
+
                 if df_time[var].dtypes == "object":
-                    res_espec[var] = {
+                    res_espec = {
                         "number_of_missing": int(df_time[var].isnull().sum()),
                         "number_of_unique_values": int(df_time[var].nunique()),
                         "number_per_values": df_time[var].value_counts().to_dict(),
-                        "unique_values": df_time[var].unique().tolist(),
+                        "unique_values": df_time[var].unique().tolist()
                     }
                 elif df_time[var].dtype in ["int64", "float64"]:
-                    res_espec[var] = {
-                    "number_of_missing": int(df_time[var].isnull().sum()),
-                    "number_of_zeros": int((df_time[var] == 0).sum()),
-                    "sum" : float(df_time[var].sum()),
-                    "mean": float(round(df_time[var].mean(), 2)),
-                    "median": float(df_time[var].median()),
-                    "std": float(round(df_time[var].std(), 2)),
-                    "min": float(df_time[var].min()),
-                    "25%": float(df_time[var].quantile(0.25)),
-                    "50%": float(df_time[var].quantile(0.5)),
-                    "75%": float(df_time[var].quantile(0.75)),
-                    "max": float(df_time[var].max()),
+                    quintil_cut_points[var] = self.df[var].quantile([0.2, 0.4, 0.6, 0.8]).to_dict()
+                    res_espec = {
+                        "number_of_missing": int(df_time[var].isnull().sum()),
+                        "number_of_zeros": int((df_time[var] == 0).sum()),
+                        "sum" : float(df_time[var].sum()),
+                        "mean": float(round(df_time[var].mean(), 2)),
+                        "median": float(df_time[var].median()),
+                        "number_per_quintile":  {
+                            f"<= {round(quintil_cut_points[var][0.2], 0)}": int((df_time[var] <= quintil_cut_points[var][0.2]).sum()),
+                            f"<= {round(quintil_cut_points[var][0.4], 0)}": int(((df_time[var] > quintil_cut_points[var][0.2]) & (df_time[var] <= quintil_cut_points[var][0.4])).sum()),
+                            f"<= {round(quintil_cut_points[var][0.6], 0)}": int(((df_time[var] > quintil_cut_points[var][0.4]) & (df_time[var] <= quintil_cut_points[var][0.6])).sum()),
+                            f"<= {round(quintil_cut_points[var][0.8], 0)}": int(((df_time[var] > quintil_cut_points[var][0.6]) & (df_time[var] <= quintil_cut_points[var][0.8])).sum()),
+                            f"> {round(quintil_cut_points[var][0.8], 0)}": int((df_time[var] > quintil_cut_points[var][0.8]).sum())
+                        }
                     }
-            res_espect_time[time] = res_espec
-            return res_espect_time
+                res_espect_time[time] = res_espec
+            res_espect_var[var] = res_espect_time
+        return res_espect_var
     
-    def variables_estability(self):
+    def variables_estability(self, top_n=5):
 
-        unique_times = np.sort(self.df[self.time_name].unique())
         
-        res_estability = {}
+        psi_tot_results = {}
 
-        ips_results = {}
-        ips_tot_results = {}
-
-        ks_results = {}
         ks_tot_results = {}
 
-        for var in self.df.columns:
+        unique_times = np.sort(self.df[self.time_name].unique())
+        df_filtered = self.df.drop(columns=[self.time_name, self.target_name, self.id_name])
+
+        for var in df_filtered:
 
             if self.df[var].dtypes == "object":
-
-                # Calculate IPS for every month in the dataframe
+                psi_results = {}
+                # Calculate psi for every month in the dataframe
                 for i in range(len(unique_times) - 1):
                     base_period = unique_times[i]
                     comparison_period = unique_times[i + 1]
-                    ips_value = UtilsCalc.calculate_ips(self.df, self.time_name, var, base_period, comparison_period)
-                    ips_results[f"{base_period} vs {comparison_period}"] = ips_value
+                    psi_value = UtilsCalc.calculate_psi(self.df, self.time_name, var, base_period, comparison_period)
+                    psi_results[f"{base_period} vs {comparison_period}"] = psi_value
                    
-                # Appending the results of the variable on the ips dictionary
-                ips_tot_results[var] = ips_results
+                # Appending the results of the variable on the psi dictionary
+                psi_tot_results[var] = psi_results
 
 
             elif self.df[var].dtypes in ["int64", "float64"]:
+                ks_results = {}
                 # Calculate KS for every month in the dataframe
                 for i in range(len(unique_times) - 1):
                     base_period = unique_times[i]
                     comparison_period = unique_times[i + 1]
-                    ks_value = UtilsCalc.calculate_ks(self.df, self.time_name, var, base_period, comparison_period)
+                    ks_value = UtilsCalc.calculate_ks(df=self.df, 
+                                                        time_column=self.time_name, 
+                                                        value_column=var, 
+                                                        base_period=base_period, 
+                                                        comparison_period=comparison_period)
                     ks_results[f"{base_period} vs {comparison_period}"] = ks_value
                     
-                # Appending the results of the variable on the ips dictionary
+                # Appending the results of the variable on the psi dictionary
                 ks_tot_results[var] = ks_results
             
-        res_estability['ips_results'] = ips_tot_results
-        res_estability['ks_results'] = ks_tot_results
 
-        return res_estability
+        psi_ = sorted(psi_tot_results.items(), 
+                    key=lambda x: max(x[1].values()), 
+                    reverse=True)[:top_n]
 
-    def promising_features(self):
+        ks_ = sorted(ks_tot_results.items(), 
+                    key=lambda x: max(x[1].values()), 
+                    reverse=True)[:top_n]
+
+        return psi_, ks_
+
+    def variables_fillment(self, top_n=5):
+
+        # Convert the number of missing values per variable to a dataframe
+        df_missing = pd.DataFrame(list(self.df.isnull().sum().to_dict().items()), columns=['Variable', 'Missing Values'])
+
+        # Sort the dataframe by the number of missing values in descending order
+        df_missing_sorted = df_missing.sort_values(by='Missing Values', ascending=False)
+
+        # Calculate the percentage of missing values for each variable
+        df_missing_sorted['Missing Values (%)'] = (df_missing_sorted['Missing Values'] / self.df.shape[0]) * 100
+
+        miss_ = df_missing_sorted.head(top_n).to_dict()
+
+        # Convert the number of missing values per variable to a dataframe
+        df_zero = pd.DataFrame(list((self.df == 0).sum().to_dict().items()), columns=['Variable', 'Missing Values'])
+
+        # Sort the dataframe by the number of missing values in descending order
+        df_zero_sorted = df_zero.sort_values(by='Missing Values', ascending=False)
+
+        # Calculate the percentage of missing values for each variable
+        df_zero_sorted['Missing Values (%)'] = (df_zero_sorted['Missing Values'] / self.df.shape[0]) * 100
+
+        zero_ = df_zero_sorted.head(top_n).to_dict()
+
+        return miss_, zero_
+
+    def promising_features(self, top_n=5):
         iv_df = UtilsCalc.calculate_information_value(self.df, self.target_name)
         mi_df = UtilsCalc.calculate_mutual_information(self.df, self.target_name)
 
-        # Select the top 10 features based on Information Value
+        # Select the top features based on Information Value
         top_iv_features = iv_df.to_dict()
 
-        # Select the top 10 features based on Mutual Information
+        iv_ = sorted(top_iv_features['Information Value'].items(), key=lambda x: x[1], reverse=True)[:top_n]
 
-        mi_dict = dict(zip(mi_df['Feature'], mi_df['Mutual Information']))
-        top_mi_features = mi_dict
+        # Select the top features based on Mutual Information
 
-        top_features = { 'iv': top_iv_features, 'mi': top_mi_features }
+        top_mi_features = dict(zip(mi_df['Feature'], mi_df['Mutual Information']))
 
-        return top_features
+        mi_ = sorted(top_mi_features.items(), key=lambda x: x[1], reverse=True)[:5]
+
+        return iv_, mi_
             
