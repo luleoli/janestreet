@@ -143,7 +143,24 @@
   <header>
     <h2>Exploratory Data Analysis: UCI_Credit_Card 1.0.0</h2>
   </header>
+  <button id="scrollToTopBtn"
+    style="display: none; position: fixed; bottom: 20px; right: 20px; z-index: 99; font-size: 18px; border: none; outline: none; background-color: var(--primary-color); color: white; cursor: pointer; padding: 15px; border-radius: 4px;">Top</button>
+  <script>
+    const scrollToTopBtn = document.getElementById("scrollToTopBtn");
 
+    window.onscroll = function () {
+      if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+        scrollToTopBtn.style.display = "block";
+      } else {
+        scrollToTopBtn.style.display = "none";
+      }
+    };
+
+    scrollToTopBtn.addEventListener("click", function () {
+      document.body.scrollTop = 0;
+      document.documentElement.scrollTop = 0;
+    });
+  </script>
   <main>
     <section>
 
@@ -207,49 +224,49 @@
       <h2>Especific Variables</h2>
 
 
-        {% for variable, details in specific_variables.items() %}
+      {% for variable, details in specific_variables.items() %}
 
-        <div class="container">
+      <div class="container">
 
         <h3> {{ variable }} </h3>
 
         <div class=".container-vertical">
 
-            {{ details.tab_desc }}
+          {{ details.tab_desc }}
 
-            {{ details.tab_quant }}
+          {{ details.tab_quant }}
 
         </div>
 
         <div class=".container-vertical">
 
-            <div id="hist_graph_{{variable}}"></div>
-            <script>
-              const spec_hist_{{variable}} = {{ details.hist | safe }};
-              const embedOpt_hist_{{variable}} = { "actions": false };
-              vegaEmbed('#hist_graph_{{variable}}', spec_hist_{{variable}}, embedOpt_hist_{{variable}}).catch(console.error);
-            </script>
+          <div id="hist_graph_{{variable}}"></div>
+          <script>
+            const spec_hist_{{ variable }} = {{ details.hist | safe }};
+            const embedOpt_hist_{{ variable }} = { "actions": false };
+            vegaEmbed('#hist_graph_{{variable}}', spec_hist_{{ variable }}, embedOpt_hist_{{ variable }}).catch(console.error);
+          </script>
 
-            <br>
+          <br>
 
-            <div id="decil_graph_{{variable}}"></div>
-            <script>
-              const spec_decil_{{variable}} = {{ details.decil | safe }};
-              const embedOpt_decil_{{variable}} = { "actions": false };
-              vegaEmbed('#decil_graph_{{variable}}', spec_decil_{{variable}}, embedOpt_decil_{{variable}}).catch(console.error);
-            </script>
+          <div id="decil_graph_{{variable}}"></div>
+          <script>
+            const spec_decil_{{ variable }} = {{ details.decil | safe }};
+            const embedOpt_decil_{{ variable }} = { "actions": false };
+            vegaEmbed('#decil_graph_{{variable}}', spec_decil_{{ variable }}, embedOpt_decil_{{ variable }}).catch(console.error);
+          </script>
         </div>
       </div>
 
       <div class="container">
 
 
-          <div id="hist_time_graph_{{variable}}"></div>
-          <script>
-            const spec_hist_time_{{variable}} = {{ details.hist_time | safe }};
-            const embedOpt_hist_time_{{variable}} = { "actions": false };
-            vegaEmbed('#hist_time_graph_{{variable}}', spec_hist_time_{{variable}}, embedOpt_hist_time_{{variable}}).catch(console.error);
-          </script>
+        <div id="hist_time_graph_{{variable}}"></div>
+        <script>
+          const spec_hist_time_{{ variable }} = {{ details.hist_time | safe }};
+          const embedOpt_hist_time_{{ variable }} = { "actions": false };
+          vegaEmbed('#hist_time_graph_{{variable}}', spec_hist_time_{{ variable }}, embedOpt_hist_time_{{ variable }}).catch(console.error);
+        </script>
 
       </div>
       {% endfor %}
