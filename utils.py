@@ -72,7 +72,7 @@ class UtilsCalc:
         # Separate the features and the target variable
         X = df.drop(columns=[target_column])
         y = df[target_column]
-        
+
         # Apply LabelEncoder to non-numeric columns
         for col in X.columns:
             if X[col].dtype not in ["float64", "int64"]:
@@ -91,32 +91,46 @@ class UtilsCalc:
 
         return mi_df
 
-    def calculate_psi(df, time_column, category_column, base_period, comparison_period):
+    def calculate_psi(df, time_column, variable_column, base_period, comparison_period):
         """
-        Calculate the Index of Population Stability (psi) for a categorical variable between two time periods.
+        Calculate the Index of Population Stability (psi) for a variable (categorical or continuous)
+        between two time periods.
 
         Parameters:
         df (pd.DataFrame): The dataframe containing the data.
         time_column (str): The name of the column representing the time period.
-        category_column (str): The name of the categorical variable column.
+        variable_column (str): The name of the variable column.
         base_period (str): The base time period for comparison.
         comparison_period (str): The time period to compare against the base period.
 
         Returns:
         float: The calculated psi value.
         """
-        # Calculate the distribution of the categorical variable for the base period
-        base_dist = df[df[time_column] == base_period][category_column].value_counts(
-            normalize=True
-        )
+        # Extract the data for the base and comparison periods
+        base_data = df[df[time_column] == base_period][variable_column]
+        comparison_data = df[df[time_column] == comparison_period][variable_column]
 
-        # Calculate the distribution of the categorical variable for the comparison period
-        comparison_dist = df[df[time_column] == comparison_period][
-            category_column
-        ].value_counts(normalize=True)
+        # Check if the variable is categorical or continuous
+        if base_data.dtype == "object" or len(base_data.unique()) < 20:
+            # Calculate the distribution for categorical variables
+            base_dist = base_data.value_counts(normalize=True)
+            comparison_dist = comparison_data.value_counts(normalize=True)
 
-        # Align the distributions to ensure they have the same categories
-        base_dist, comparison_dist = base_dist.align(comparison_dist, fill_value=0)
+            # Align the distributions to ensure they have the same categories
+            base_dist, comparison_dist = base_dist.align(comparison_dist, fill_value=0)
+        else:
+            # Bin continuous variables into 10 equal-sized bins
+            bins = pd.qcut(
+                pd.concat([base_data, comparison_data]), q=10, duplicates="drop"
+            )
+
+            # Calculate the distribution for continuous variables
+            base_dist = pd.cut(base_data, bins=bins.cat.categories).value_counts(
+                normalize=True
+            )
+            comparison_dist = pd.cut(
+                comparison_data, bins=bins.cat.categories
+            ).value_counts(normalize=True)
 
         # Calculate the psi
         psi = sum(abs(base_dist - comparison_dist)) / 2
@@ -206,13 +220,28 @@ class UtilsCalc:
 
 
 class SandEDA(UtilsCalc):
-    def __init__(self, df: pd.DataFrame, target_name: str, time_name: str, id_name: str, top_n: int =5):
+    def __init__(
+        self,
+        df: pd.DataFrame,
+        target_name: str,
+        time_name: str,
+        id_name: str,
+        top_n: int = 5,
+    ):
         self.df = df
         self.target_name = target_name
         self.time_name = time_name
         self.id_name = id_name
         self.target_type = df[target_name].dtypes
         self.top_n = top_n
+
+        for var in self.df.columns:
+            if self.df[var].dtype == "object" and len(self.df[var].unique()) > 10:
+                # Consolidate into top 30 categories and 'Other'
+                top_categories = self.df[var].value_counts().nlargest(10).index
+                self.df[var] = self.df[var].apply(
+                    lambda x: x if x in top_categories else "Other"
+                )
 
     def calc_general(self):
         res_general = {
@@ -263,13 +292,15 @@ class SandEDA(UtilsCalc):
 
     def histogram_variable_espec(self, variable):
         if len(variable.unique()) <= 50 or variable.dtype not in ["int64", "float64"]:
-            res_hist_espec = variable.value_counts().to_dict()
+            res_hist_espec = dict(sorted(variable.value_counts().items()))
         else:
-            res_hist_espec = variable.value_counts(bins=50).to_dict()
+            res_hist_espec = dict(sorted(variable.value_counts(bins=50).items(), key=lambda x: x[0].left))
         return res_hist_espec
 
     def decil_variable_espec(self, variable_name):
-        if len(self.df[variable_name].unique()) <= 10 or self.df[variable_name].dtype not in ["int64", "float64"]:
+        if len(self.df[variable_name].unique()) <= 10 or self.df[
+            variable_name
+        ].dtype not in ["int64", "float64"]:
             res_decil_espec = self.df.groupby([variable_name])[self.target_name].mean()
         else:
             res_decil_espec = self.df.groupby(
@@ -286,26 +317,26 @@ class SandEDA(UtilsCalc):
 
         for var in df_filtered:
             if self.df[var].dtypes == "object":
-                res_espec[var] = { 
-                    'descriptive_statistics': {
-                    "variable_type": self.df[var].dtypes,
-                    "number_of_missing": int(self.df[var].isnull().sum()),
-                    "number_of_unique_values": int(self.df[var].nunique()),
-                    "number_per_values": self.df[var].value_counts().to_dict(),
-                    "unique_values": self.df[var].unique().tolist()
-                    },          
+                res_espec[var] = {
+                    "descriptive_statistics": {
+                        "variable_type": self.df[var].dtypes,
+                        "number_of_missing": int(self.df[var].isnull().sum()),
+                        "number_of_unique_values": int(self.df[var].nunique()),
+                        "number_per_values": self.df[var].value_counts().to_dict(),
+                        "unique_values": self.df[var].unique().tolist(),
+                    },
                     "quantile_statistics": {
-                        "min": 'cat feat',
-                        "5%": 'cat feat',
-                        "25%": 'cat feat',
-                        "50%": 'cat feat',
-                        "75%": 'cat feat',
-                        "95%": 'cat feat',
-                        "max": 'cat feat',
+                        "min": "cat feat",
+                        "5%": "cat feat",
+                        "25%": "cat feat",
+                        "50%": "cat feat",
+                        "75%": "cat feat",
+                        "95%": "cat feat",
+                        "max": "cat feat",
                     },
                     "histogram": self.histogram_variable_espec(self.df[var]),
-                    "decil": self.decil_variable_espec(var)
-                    }
+                    "decil": self.decil_variable_espec(var),
+                }
             elif self.df[var].dtype in ["int64", "float64"]:
                 res_espec[var] = {
                     "descriptive_statistics": {
@@ -348,48 +379,21 @@ class SandEDA(UtilsCalc):
 
                 res_espec = {}
 
-                if df_time[var].dtypes == "object":
-                    le = LabelEncoder()
-                    self.df[var] = le.fit_transform(self.df[var])
+                if df_time[var].dtypes == "object" or len(df_time[var].unique()) <= 10:
                     df_time = self.df[self.df[self.time_name] == time]
-
-                    quintil_cut_points[var] = (
-                        self.df[var].quantile([0.2, 0.4, 0.6, 0.8]).to_dict()
-                    )
 
                     res_espec = {
                         "number_of_missing": int(df_time[var].isnull().sum()),
                         "number_of_zeros": int((df_time[var] == 0).sum()),
-                        "sum": float(df_time[var].sum()),
-                        "mean": float(round(df_time[var].mean(), 2)),
-                        "median": float(df_time[var].median()),
+                        "sum": None,
+                        "mean": None,
+                        "median": None,
                         "number_per_quintile": {
-                            f"<= {round(quintil_cut_points[var][0.2], 0)}": int(
-                                (df_time[var] <= quintil_cut_points[var][0.2]).sum()
-                            ),
-                            f"<= {round(quintil_cut_points[var][0.4], 0)}": int(
-                                (
-                                    (df_time[var] > quintil_cut_points[var][0.2])
-                                    & (df_time[var] <= quintil_cut_points[var][0.4])
-                                ).sum()
-                            ),
-                            f"<= {round(quintil_cut_points[var][0.6], 0)}": int(
-                                (
-                                    (df_time[var] > quintil_cut_points[var][0.4])
-                                    & (df_time[var] <= quintil_cut_points[var][0.6])
-                                ).sum()
-                            ),
-                            f"<= {round(quintil_cut_points[var][0.8], 0)}": int(
-                                (
-                                    (df_time[var] > quintil_cut_points[var][0.6])
-                                    & (df_time[var] <= quintil_cut_points[var][0.8])
-                                ).sum()
-                            ),
-                            f"> {round(quintil_cut_points[var][0.8], 0)}": int(
-                                (df_time[var] > quintil_cut_points[var][0.8]).sum()
-                            ),
+                            category: int((df_time[var] == category).sum())
+                            for category in df_time[var].unique()
                         },
                     }
+
                 elif df_time[var].dtype in ["int64", "float64"]:
                     quintil_cut_points[var] = (
                         self.df[var].quantile([0.2, 0.4, 0.6, 0.8]).to_dict()
@@ -442,21 +446,20 @@ class SandEDA(UtilsCalc):
         )
 
         for var in df_filtered:
-            if self.df[var].dtypes == "object":
-                psi_results = {}
-                # Calculate psi for every month in the dataframe
-                for i in range(len(unique_times) - 1):
-                    base_period = unique_times[i]
-                    comparison_period = unique_times[i + 1]
-                    psi_value = UtilsCalc.calculate_psi(
-                        self.df, self.time_name, var, base_period, comparison_period
-                    )
-                    psi_results[f"{base_period} vs {comparison_period}"] = psi_value
+            psi_results = {}
+            # Calculate psi for every month in the dataframe
+            for i in range(len(unique_times) - 1):
+                base_period = unique_times[i]
+                comparison_period = unique_times[i + 1]
+                psi_value = UtilsCalc.calculate_psi(
+                    self.df, self.time_name, var, base_period, comparison_period
+                )
+                psi_results[f"{base_period} vs {comparison_period}"] = psi_value
 
-                # Appending the results of the variable on the psi dictionary
-                psi_tot_results[var] = psi_results
+            # Appending the results of the variable on the psi dictionary
+            psi_tot_results[var] = psi_results
 
-            elif self.df[var].dtypes in ["int64", "float64"]:
+            if self.df[var].dtypes in ["int64", "float64"]:
                 ks_results = {}
                 # Calculate KS for every month in the dataframe
                 for i in range(len(unique_times) - 1):
@@ -488,32 +491,39 @@ class SandEDA(UtilsCalc):
         # Convert the number of missing values per variable to a dataframe
         df_missing = pd.DataFrame(
             list(self.df.isnull().sum().to_dict().items()),
-            columns=["Variable", "Missing Values"],
+            columns=["Variable", "Missing"],
         )
 
         # Sort the dataframe by the number of missing values in descending order
-        df_missing_sorted = df_missing.sort_values(by="Missing Values", ascending=False)
+        df_missing_sorted = df_missing.sort_values(by="Missing", ascending=False)
 
         # Calculate the percentage of missing values for each variable
-        df_missing_sorted["Missing Values (%)"] = (
-            df_missing_sorted["Missing Values"] / self.df.shape[0]
+        df_missing_sorted["Missing (%)"] = (
+            df_missing_sorted["Missing"] / self.df.shape[0]
         ) * 100
+
+
+        df_missing_sorted["Missing"] = df_missing_sorted["Missing (%)"].apply(lambda x: f"{x:.0f}")
+        df_missing_sorted["Missing (%)"] = df_missing_sorted["Missing (%)"].apply(lambda x: f"{x:.2f}%")
 
         miss_ = df_missing_sorted.head(self.top_n).to_dict()
 
-        # Convert the number of missing values per variable to a dataframe
+        # Convert the number of Zero values per variable to a dataframe
         df_zero = pd.DataFrame(
             list((self.df == 0).sum().to_dict().items()),
-            columns=["Variable", "Missing Values"],
+            columns=["Variable", "Zero"],
         )
 
-        # Sort the dataframe by the number of missing values in descending order
-        df_zero_sorted = df_zero.sort_values(by="Missing Values", ascending=False)
+        # Sort the dataframe by the number of Zero values in descending order
+        df_zero_sorted = df_zero.sort_values(by="Zero", ascending=False)
 
         # Calculate the percentage of missing values for each variable
-        df_zero_sorted["Missing Values (%)"] = (
-            df_zero_sorted["Missing Values"] / self.df.shape[0]
+        df_zero_sorted["Zero (%)"] = (
+            df_zero_sorted["Zero"] / self.df.shape[0]
         ) * 100
+
+        df_zero_sorted["Zero"] = df_zero_sorted["Zero (%)"].apply(lambda x: f"{x:.0f}")
+        df_zero_sorted["Zero (%)"] = df_zero_sorted["Zero (%)"].apply(lambda x: f"{x:.2f}%")
 
         zero_ = df_zero_sorted.head(self.top_n).to_dict()
 
@@ -543,11 +553,9 @@ class SandEDA(UtilsCalc):
     def report(self, report_version: str):
         ### OVERVIEW
 
-        sandeda = SandEDA(self.df
-                          ,self.target_name
-                          ,self.time_name
-                          ,self.id_name
-                          ,self.top_n)
+        sandeda = SandEDA(
+            self.df, self.target_name, self.time_name, self.id_name, self.top_n
+        )
         res_general = sandeda.calc_general()
 
         overview_target_metric_time = res_general["target_general"][
@@ -573,9 +581,12 @@ class SandEDA(UtilsCalc):
 
         overview_tab_general = pd.DataFrame(
             list(res_general["dataset_general"].items()),
-            columns=["description", "value"],
+            columns=["Description", "Value"],
             index=None,
-        ).to_html(index=False, border=0)
+        )
+        overview_tab_general["Value"] = overview_tab_general["Value"].apply(
+            lambda x: f"{x:,.0f}")
+        overview_tab_general = overview_tab_general.to_html(index=False, border=0)
 
         overview_tab_full = pd.DataFrame(res_general["missing_zero"]).to_html(
             index=False, border=0
@@ -583,13 +594,13 @@ class SandEDA(UtilsCalc):
 
         overview_target_name = res_general["target_general"]["target_name"]
 
-        overview_target_metric = (
+        overview_target_metric = round((
             res_general["target_general"]["number_of_one"]
             / (
                 res_general["target_general"]["number_of_zero"]
                 + res_general["target_general"]["number_of_one"]
             )
-        ) * 100
+        ) * 100, 2)
 
         overview_tgt_graph_json = chart.to_json()
 
@@ -601,30 +612,30 @@ class SandEDA(UtilsCalc):
 
         var_tab_ks = pd.DataFrame(
             {
-                "Variable": [var for var, _ in ks_],
-                "Max KS": [max(value.values()) for _, value in ks_],
+            "Variable": [var for var, _ in ks_],
+            "KS": [round(max(value.values()), 3) for _, value in ks_],
             }
         ).to_html(index=False, border=0)
 
         var_tab_psi = pd.DataFrame(
             {
                 "Variable": [var for var, _ in psi_],
-                "Max PSI": [max(value.values()) for _, value in psi_],
+                "PSI": [round(max(value.values()), 3) for _, value in psi_],
             }
         ).to_html(index=False, border=0)
 
         var_tab_iv = pd.DataFrame(
-            {"Variable": [var for var, _ in iv_], "IV": [value for _, value in iv_]}
+            {"Variable": [var for var, _ in iv_], "IV": [round(value, 3) for _, value in iv_]}
         ).to_html(index=False, border=0)
 
         var_tab_mi = pd.DataFrame(
-            {"Variable": [var for var, _ in mi_], "MI": [value for _, value in mi_]}
+            {"Variable": [var for var, _ in mi_], "MI": [round(value, 3) for _, value in mi_]}
         ).to_html(index=False, border=0)
 
         var_tab_miss = pd.DataFrame(miss_).to_html(index=False, border=0)
         var_tab_zero = pd.DataFrame(zero_).to_html(index=False, border=0)
 
-        ### VARIABLES ESPECIFICS
+        ### ESPECIFIC VARIABLES
 
         variables_espec = sandeda.variables_espec()
 
@@ -632,7 +643,11 @@ class SandEDA(UtilsCalc):
 
         var_espec_content = {}
 
-        vars_keys = variables_espec.keys() - {self.id_name, self.target_name, self.time_name}
+        vars_keys = variables_espec.keys() - {
+            self.id_name,
+            self.target_name,
+            self.time_name,
+        }
 
         for var_espec in vars_keys:
             hist_var = variables_espec[var_espec]["histogram"]
@@ -646,25 +661,35 @@ class SandEDA(UtilsCalc):
 
             var_spec_tab_desc = pd.DataFrame(
                 {
-                    "description": variables_espec[var_espec][
+                    "Description": variables_espec[var_espec][
                         "descriptive_statistics"
                     ].keys(),
-                    "value": variables_espec[var_espec][
-                        "descriptive_statistics"
-                    ].values(),
+                    "Value": [
+                        f"{value:,.0f}" if isinstance(value, (int, float)) else str(value) for value in variables_espec[var_espec][
+                            "descriptive_statistics"
+                        ].values()
+                    ],
                 }
             ).to_html(index=False, border=0)
 
             var_spec_tab_quant = pd.DataFrame(
                 {
-                    "description": variables_espec[var_espec][
+                    "Description": variables_espec[var_espec][
                         "quantile_statistics"
                     ].keys(),
-                    "value": variables_espec[var_espec]["quantile_statistics"].values(),
+                    "Value": [
+                        f"{value:,.0f}" if isinstance(value, (int, float)) else str(value) for value in variables_espec[var_espec][
+                            "quantile_statistics"
+                        ].values()
+                    ],
                 }
             ).to_html(index=False, border=0)
 
-            if variables_espec[var_espec]["descriptive_statistics"]["number_of_unique_values"] <= 50 or variables_espec[var_espec]["descriptive_statistics"]['variable_type'] not in ["int64", "float64"]:
+            if variables_espec[var_espec]["descriptive_statistics"][
+                "number_of_unique_values"
+            ] <= 50 or variables_espec[var_espec]["descriptive_statistics"][
+                "variable_type"
+            ] not in ["int64", "float64"]:
                 # Convert the histogram data to a dataframe
                 hist_data = pd.DataFrame(
                     {
@@ -704,7 +729,7 @@ class SandEDA(UtilsCalc):
             var_spec_hist_graph_json = hist_chart.to_json()
 
             decil_data = pd.DataFrame(
-                {"Decil": list(decil_var.index), "Target": list(decil_var.values)}
+                {"Decil": list(decil_var.index), "Target": list(np.round(decil_var.values, 2))}
             )
 
             # Create the bar plot using Altair
@@ -728,7 +753,7 @@ class SandEDA(UtilsCalc):
 
             var_spec_decil_graph_json = decil_chart.to_json()
 
-            # Create a dataframe with the number_per_quintile values for each month
+            # Create a dataframe with the number_per_quintile values for each time period
             df_quintile_time = pd.DataFrame(
                 {
                     "Date": list(variables_espec_time[var_espec].keys()),
@@ -764,9 +789,9 @@ class SandEDA(UtilsCalc):
                 .encode(
                     x=alt.X("Date", title="Date"),
                     y=alt.Y("Percentage", title="Percentage", stack="normalize"),
-                    color=alt.Color("Quintile", title="Quintile"),
+                    color=alt.Color("Quintile", title="Legend"),
                 )
-                .properties(width=800, height=200, title="100% Stacked Column Chart")
+                .properties(width=800, height=200, title="Distribution Over Time")
                 .configure_axis(labelAngle=45)
                 .configure_title(fontSize=14)
                 .configure_legend(orient="top")
@@ -795,6 +820,7 @@ class SandEDA(UtilsCalc):
 
         # Render the template with the data
         rendered_html = template.render(
+            title=report_version,
             overview_tab_general=overview_tab_general,
             overview_tab_full=overview_tab_full,
             overview_target_metric=overview_target_metric,

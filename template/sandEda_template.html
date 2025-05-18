@@ -7,7 +7,7 @@
   <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>UCI_Credit_Card_1_0_0</title>
+  <title>{{ title }}</title>
   <style>
     :root {
       --primary-color: #90a7bd8c;
@@ -141,7 +141,7 @@
 
 <body>
   <header>
-    <h2>Exploratory Data Analysis: UCI_Credit_Card 1.0.0</h2>
+    <h2>Exploratory Data Analysis: {{ title }}</h2>
   </header>
   <button id="scrollToTopBtn"
     style="display: none; position: fixed; bottom: 20px; right: 20px; z-index: 99; font-size: 18px; border: none; outline: none; background-color: var(--primary-color); color: white; cursor: pointer; padding: 15px; border-radius: 4px;">Top</button>
@@ -177,7 +177,7 @@
             Target Name: <b>{{overview_target_name}}</b>
           </div>
           <div class="card">
-            Target: <b>{{overview_target_metric}}</b>
+            Target: <b>{{ overview_target_metric }}</b>
           </div>
 
           <div id="target_graph"></div>
@@ -243,6 +243,7 @@
           <div id="hist_graph_{{variable}}"></div>
           <script>
             const spec_hist_{{ variable }} = {{ details.hist | safe }};
+            spec_hist_{{ variable }}.mark = { type: "bar", width: 15 }; // Set bar width
             const embedOpt_hist_{{ variable }} = { "actions": false };
             vegaEmbed('#hist_graph_{{variable}}', spec_hist_{{ variable }}, embedOpt_hist_{{ variable }}).catch(console.error);
           </script>
@@ -252,6 +253,21 @@
           <div id="decil_graph_{{variable}}"></div>
           <script>
             const spec_decil_{{ variable }} = {{ details.decil | safe }};
+            spec_decil_{{ variable }}.mark = { type: "bar", width: 20 }; 
+            spec_decil_{{ variable }}.layer = [
+              {
+                mark: { type: "bar", width: 20 },
+                encoding: spec_decil_{{ variable }}.encoding
+              },
+              {
+                mark: { type: "text", dy: -5 }, // Position the text above the bar
+                encoding: {
+                  text: { field: "Target", type: "quantitative" }, // Replace "value" with the field name for your bar values
+                  x: spec_decil_{{ variable }}.encoding.x,
+                  y: spec_decil_{{ variable }}.encoding.y
+                }
+              }
+            ];
             const embedOpt_decil_{{ variable }} = { "actions": false };
             vegaEmbed('#decil_graph_{{variable}}', spec_decil_{{ variable }}, embedOpt_decil_{{ variable }}).catch(console.error);
           </script>

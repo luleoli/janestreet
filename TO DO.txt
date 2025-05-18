@@ -1,0 +1,12 @@
+
+Report EDA
+
+Modeling
+    Logistic Regression
+
+    XGB
+    LGBM
+
+    MLP
+    LSTM
+    TRASNFORMER
